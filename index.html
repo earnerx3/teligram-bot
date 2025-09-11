@@ -129,7 +129,7 @@
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
 
             // ==========================================================
             // STEP 1: আপনার FIREBASE কনফিগারেশন এখানে বসানো হয়েছে
@@ -150,12 +150,8 @@
 
             // --- Default App Settings (Firebase থেকে না পেলে এগুলো ব্যবহৃত হবে) ---
             let appSettings = {
-                REFERRAL_BONUS: 25,
-                MIN_WITHDRAW_AMOUNT: 1000,
-                MIN_REFERRALS_FOR_WITHDRAW: 20,
-                DAILY_ADS_LIMIT: 10,
-                TELEGRAM_JOIN_BONUS: 10,
-                YOUTUBE_JOIN_BONUS: 15
+                REFERRAL_BONUS: 25, MIN_WITHDRAW_AMOUNT: 1000, MIN_REFERRALS_FOR_WITHDRAW: 20,
+                DAILY_ADS_LIMIT: 10, TELEGRAM_JOIN_BONUS: 10, YOUTUBE_JOIN_BONUS: 15
             };
             let activeAds = [];
 
@@ -163,8 +159,7 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.firestore();
             const tg = window.Telegram.WebApp;
-            
-            // --- DOM Elements ---
+
             const elements = {
                 preloader: document.getElementById('preloader'), appContainer: document.getElementById('app-container'),
                 loaderPic: document.getElementById('loader-pic'), loaderUsername: document.getElementById('loader-username'),
@@ -185,112 +180,61 @@
             let currentUserData = null;
             let adClickCount = 0;
 
-            // --- Main Function to Start the App ---
-            async function main() {
-                try {
-                    tg.ready();
-                    tg.expand();
-                    
-                    const tgUser = tg.initDataUnsafe?.user;
-                    if (!tgUser) throw new Error("Please open this app inside Telegram.");
-
-                    initializeAppUI(tgUser);
-                    await Promise.all([fetchAppSettings(), fetchActiveAds()]);
-                    
-                    currentUserData = await getUserOrCreateAccount(tgUser);
-                    
-                    finishLoadingAnimation(tgUser);
-
-                } catch (error) {
-                    console.error("Critical Error:", error);
-                    elements.loaderUsername.textContent = `Error: ${error.message}`;
-                }
-            }
+            const showView = (viewId) => {
+                elements.views.forEach(view => view.classList.remove('active'));
+                document.getElementById(viewId)?.classList.add('active');
+                elements.navItems.forEach(item => item.classList.remove('active'));
+                document.querySelector(`.nav-btn[data-view="${viewId}"]`)?.classList.add('active');
+            };
             
-            // --- Fetch Data from Firebase ---
-            async function fetchAppSettings() {
-                const doc = await db.collection('settings').doc('config').get();
-                if (doc.exists) appSettings = { ...appSettings, ...doc.data() };
-            }
-            async function fetchActiveAds() {
-                const snapshot = await db.collection('ads').where('isActive', '==', true).get();
-                activeAds = snapshot.docs.map(doc => doc.data());
-            }
+            // --- Main Function to Start the App ---
+            try {
+                tg.ready();
+                tg.expand();
+                
+                const tgUser = tg.initDataUnsafe?.user;
+                if (!tgUser) throw new Error("Please open this app inside Telegram.");
 
-            // --- User Account Management ---
-            async function getUserOrCreateAccount(tgUser) {
+                // Start loading animation with user info
+                const profilePic = tgUser.photo_url || 'https://i.ibb.co/L5k6v7R/default-profile.jpg';
+                elements.loaderPic.src = profilePic;
+                elements.headerProfilePic.src = profilePic;
+                elements.loaderUsername.textContent = `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim();
+
+                // Fetch data in parallel
+                await Promise.all([
+                    (async () => {
+                        const doc = await db.collection('settings').doc('config').get();
+                        if (doc.exists) appSettings = { ...appSettings, ...doc.data() };
+                    })(),
+                    (async () => {
+                        const snapshot = await db.collection('ads').where('isActive', '==', true).get();
+                        activeAds = snapshot.docs.map(doc => doc.data());
+                    })()
+                ]);
+
                 const userRef = db.collection('users').doc(String(tgUser.id));
-                const doc = await userRef.get();
+                const userDoc = await userRef.get();
                 const today = new Date().toDateString();
 
-                if (!doc.exists) {
-                    const newUser = {
+                if (!userDoc.exists) {
+                    currentUserData = {
                         telegram_id: tgUser.id, first_name: `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim(),
                         username: tgUser.username || null, balance: 20, totalReferrals: 0,
                         adsWatchedToday: 0, lastAdWatchDate: null,
                         claimedTasks: { telegram: false, youtube: false }
                     };
-                    await userRef.set(newUser);
-                    return newUser;
+                    await userRef.set(currentUserData);
                 } else {
-                    let data = doc.data();
-                    if (data.lastAdWatchDate !== today) {
+                    currentUserData = userDoc.data();
+                    if (currentUserData.lastAdWatchDate !== today) {
                         await userRef.update({ adsWatchedToday: 0, lastAdWatchDate: today });
-                        data.adsWatchedToday = 0;
-                        data.lastAdWatchDate = today;
+                        currentUserData.adsWatchedToday = 0;
+                        currentUserData.lastAdWatchDate = today;
                     }
-                    return data;
                 }
-            }
-
-            // --- UI Update and Rendering ---
-            function updateUI() {
-                if (!currentUserData || !tg.initDataUnsafe?.user) return;
                 
-                const tgUser = tg.initDataUnsafe.user;
-                const { balance, adsWatchedToday, totalReferrals, claimedTasks } = currentUserData;
-                
-                // Header & Profile
-                const fullName = currentUserData.first_name;
-                const profilePic = tgUser.photo_url || DEFAULT_PROFILE_PIC;
-                elements.headerProfilePic.src = profilePic;
-                elements.userName.firstChild.textContent = fullName + ' ';
-                
-                // Dashboard
-                elements.userBalanceText.textContent = `ব্যালেন্স: ${balance} টাকা`;
-                elements.dailyAdsWatched.textContent = `${adsWatchedToday}/${appSettings.DAILY_ADS_LIMIT}`;
-                elements.totalReferrals.textContent = totalReferrals;
-                
-                // Referral Card
-                elements.referralLink.textContent = `https://t.me/${BOT_USERNAME}/app?startapp=${tgUser.id}`;
-                elements.referralBonusText.textContent = appSettings.REFERRAL_BONUS;
-
-                // Tasks View
-                elements.adRewardText.textContent = activeAds.length > 0 ? (activeAds[0].reward || 5) : 5; // Use first ad's reward
-                elements.telegramBonusText.textContent = appSettings.TELEGRAM_JOIN_BONUS;
-                elements.youtubeBonusText.textContent = appSettings.YOUTUBE_JOIN_BONUS;
-                
-                elements.watchAdBtn.disabled = adsWatchedToday >= appSettings.DAILY_ADS_LIMIT;
-                elements.watchAdBtn.textContent = elements.watchAdBtn.disabled ? 'Daily Limit Reached' : 'Watch Ad';
-                
-                elements.claimTelegramBtn.disabled = claimedTasks.telegram;
-                elements.claimTelegramBtn.textContent = claimedTasks.telegram ? 'Claimed' : 'Check & Claim';
-                elements.claimYoutubeBtn.disabled = claimedTasks.youtube;
-                elements.claimYoutubeBtn.textContent = claimedTasks.youtube ? 'Claimed' : 'Check & Claim';
-
-                // Withdraw View
-                elements.withdrawInfoText.textContent = `ন্যূনতম ${appSettings.MIN_WITHDRAW_AMOUNT} টাকা এবং কমপক্ষে ${appSettings.MIN_REFERRALS_FOR_WITHDRAW} টি রেফারেল প্রয়োজন।`;
-                elements.withdrawAmountInput.placeholder = appSettings.MIN_WITHDRAW_AMOUNT;
-            }
-
-            // --- Animations and Navigation ---
-            function initializeAppUI(tgUser) {
-                const profilePic = tgUser.photo_url || DEFAULT_PROFILE_PIC;
-                elements.loaderPic.src = profilePic;
-                elements.headerProfilePic.src = profilePic;
-                elements.loaderUsername.textContent = `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim();
-            }
-            function finishLoadingAnimation() {
+                // Finish loading animation and show the app
                 setTimeout(() => { elements.progressBar.style.width = '100%'; }, 100);
                 setTimeout(() => {
                     const headerPicRect = elements.headerProfilePic.getBoundingClientRect();
@@ -300,43 +244,59 @@
                     const translateY = headerPicRect.top - loaderPic.getBoundingClientRect().top;
                     loaderPic.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
                     loaderPic.style.boxShadow = 'none';
-                    ['loaderUsername', 'progressBar'].forEach(id => document.getElementById(id).style.opacity = '0');
+                    elements.loaderUsername.style.opacity = '0';
+                    elements.progressBar.style.opacity = '0';
                     document.querySelector('.loader-spinner').style.opacity = '0';
+
                     setTimeout(() => {
                         elements.preloader.style.opacity = '0';
                         elements.preloader.style.pointerEvents = 'none';
                         document.body.style.overflow = 'auto';
                         elements.appContainer.style.display = 'flex';
                         elements.headerProfilePic.style.opacity = '1';
-                        updateUI();
-                        showView('home-view');
-                        launchConfetti();
+                        updateUI(tgUser); // Final UI update with all data
                     }, 800);
                 }, 2500);
+
+            } catch (error) {
+                console.error("Critical Error:", error);
+                elements.loaderUsername.textContent = `Error: ${error.message}`;
+                elements.progressBar.style.display = 'none';
+                document.querySelector('.loader-spinner').style.display = 'none';
             }
-            window.showView = (viewId) => {
-                elements.views.forEach(view => view.classList.remove('active'));
-                document.getElementById(viewId).classList.add('active');
-                elements.navItems.forEach(item => item.classList.remove('active'));
-                const activeNav = document.querySelector(`.nav-btn[data-view="${viewId}"]`);
-                if(activeNav) activeNav.classList.add('active');
-            };
-            function launchConfetti() {
-                const colors = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8'];
-                for (let i = 0; i < 50; i++) {
-                    const c = document.createElement('div'); c.className = 'confetti';
-                    c.style.left = Math.random() * 100 + 'vw'; c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    c.style.animationDelay = Math.random() * 2 + 's'; c.style.transform = `rotate(${Math.random() * 360}deg)`;
-                    document.body.appendChild(c); setTimeout(() => c.remove(), 5000);
-                }
+            
+            function updateUI(tgUser) {
+                if (!currentUserData || !tgUser) return;
+                const { balance, adsWatchedToday, totalReferrals, claimedTasks } = currentUserData;
+                
+                elements.userName.firstChild.textContent = currentUserData.first_name + ' ';
+                elements.userBalanceText.textContent = `ব্যালেন্স: ${balance.toFixed(2)} টাকা`;
+                elements.dailyAdsWatched.textContent = `${adsWatchedToday}/${appSettings.DAILY_ADS_LIMIT}`;
+                elements.totalReferrals.textContent = totalReferrals;
+                elements.referralLink.textContent = `https://t.me/${BOT_USERNAME}/app?startapp=${tgUser.id}`;
+                elements.referralBonusText.textContent = appSettings.REFERRAL_BONUS;
+                elements.adRewardText.textContent = activeAds.length > 0 ? (activeAds[adClickCount % activeAds.length].reward || 5) : 5;
+                elements.telegramBonusText.textContent = appSettings.TELEGRAM_JOIN_BONUS;
+                elements.youtubeBonusText.textContent = appSettings.YOUTUBE_JOIN_BONUS;
+
+                elements.watchAdBtn.disabled = adsWatchedToday >= appSettings.DAILY_ADS_LIMIT;
+                elements.watchAdBtn.textContent = elements.watchAdBtn.disabled ? 'Daily Limit Reached' : 'Watch Ad';
+                
+                elements.claimTelegramBtn.disabled = claimedTasks.telegram;
+                elements.claimTelegramBtn.textContent = claimedTasks.telegram ? 'Claimed' : 'Check & Claim';
+                elements.claimYoutubeBtn.disabled = claimedTasks.youtube;
+                elements.claimYoutubeBtn.textContent = claimedTasks.youtube ? 'Claimed' : 'Check & Claim';
+
+                elements.withdrawInfoText.textContent = `ন্যূনতম ${appSettings.MIN_WITHDRAW_AMOUNT} টাকা এবং কমপক্ষে ${appSettings.MIN_REFERRALS_FOR_WITHDRAW} টি রেফারেল প্রয়োজন।`;
+                elements.withdrawAmountInput.placeholder = appSettings.MIN_WITHDRAW_AMOUNT;
             }
 
-            // --- Event Listeners ---
+            // Event Listeners
             elements.navItems.forEach(item => item.addEventListener('click', () => showView(item.getAttribute('data-view'))));
             elements.copyLinkBtn.addEventListener('click', () => navigator.clipboard.writeText(elements.referralLink.textContent).then(() => tg.showAlert('রেফারেল লিঙ্ক কপি করা হয়েছে!')).catch(() => tg.showAlert('লিঙ্ক কপি করতে সমস্যা হয়েছে।')));
             elements.shareBtn.addEventListener('click', () => tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(elements.referralLink.textContent)}&text=${encodeURIComponent(`আপনার বন্ধুদের রেফার করে আয় করুন!\n${elements.referralLink.textContent}`)}`));
-            elements.openTutorialBtn.addEventListener('click', () => tg.openLink(YOUTUBE_CHANNEL_URL));
-            
+            elements.openTutorialBtn.addEventListener('click', () => tg.openLink('https://youtube.com/@ndc-ai?si=OmzMSkOUY1Wbnn3m'));
+
             elements.watchAdBtn.addEventListener('click', async () => {
                 if (currentUserData.adsWatchedToday >= appSettings.DAILY_ADS_LIMIT) { tg.showAlert('আপনি আজকের সব বিজ্ঞাপন দেখে ফেলেছেন।'); return; }
                 if (activeAds.length === 0) { tg.showAlert('এই মুহূর্তে কোনো বিজ্ঞাপন উপলব্ধ নেই।'); return; }
@@ -349,17 +309,11 @@
                 
                 try {
                     if (adToShow.adType === 'gigapub') {
-                        const script = document.createElement('script');
-                        script.src = `https://ad.gigapub.tech/script?id=${adToShow.scriptId}`;
-                        document.body.appendChild(script);
-                        // GigaPub SDK might not return a promise, so we have to simulate success/failure
-                        adPromise = new Promise((resolve) => setTimeout(resolve, 5000)); // Simulate a 5s ad
+                        const script = document.createElement('script'); script.src = `https://ad.gigapub.tech/script?id=${adToShow.scriptId}`; document.body.appendChild(script);
+                        adPromise = new Promise((resolve) => setTimeout(resolve, 5000));
                     } else if (adToShow.adType === 'libtl') {
-                        const script = document.createElement('script');
-                        script.src = `//libtl.com/sdk.js`;
-                        script.setAttribute('data-zone', adToShow.zoneId);
-                        script.setAttribute('data-sdk', `show_${adToShow.zoneId}`);
-                        document.body.appendChild(script);
+                        const script = document.createElement('script'); script.src = `//libtl.com/sdk.js`;
+                        script.setAttribute('data-zone', adToShow.zoneId); script.setAttribute('data-sdk', `show_${adToShow.zoneId}`); document.body.appendChild(script);
                         adPromise = window[`show_${adToShow.zoneId}`]();
                     } else { throw new Error("Unknown ad type"); }
 
@@ -373,8 +327,7 @@
                         const newBalance = doc.data().balance + reward;
                         const newAdsWatched = doc.data().adsWatchedToday + 1;
                         transaction.update(userRef, { balance: newBalance, adsWatchedToday: newAdsWatched });
-                        currentUserData.balance = newBalance;
-                        currentUserData.adsWatchedToday = newAdsWatched;
+                        currentUserData.balance = newBalance; currentUserData.adsWatchedToday = newAdsWatched;
                     });
                     tg.showAlert(`অভিনন্দন! আপনি ${adToShow.reward || 5} টাকা পেয়েছেন।`);
                 } catch (e) {
@@ -386,30 +339,26 @@
                     updateUI();
                 }
             });
-            
+
             async function handleTaskClaim(taskName, bonusField, successMessage) {
                 const userRef = db.collection('users').doc(String(tg.initDataUnsafe.user.id));
-                const claimedTasks = currentUserData.claimedTasks;
-                if (claimedTasks[taskName]) { tg.showAlert('আপনি এই বোনাসটি আগেই নিয়েছেন।'); return; }
+                if (currentUserData.claimedTasks[taskName]) { tg.showAlert('আপনি এই বোনাসটি আগেই নিয়েছেন।'); return; }
                 
                 try {
                     const bonus = appSettings[bonusField];
                     const newBalance = currentUserData.balance + bonus;
-                    claimedTasks[taskName] = true;
-                    await userRef.update({ balance: newBalance, claimedTasks: claimedTasks });
-                    currentUserData.balance = newBalance;
-                    currentUserData.claimedTasks = claimedTasks;
+                    const newClaimedTasks = { ...currentUserData.claimedTasks, [taskName]: true };
+                    await userRef.update({ balance: newBalance, claimedTasks: newClaimedTasks });
+                    currentUserData.balance = newBalance; currentUserData.claimedTasks = newClaimedTasks;
                     updateUI();
                     tg.showAlert(successMessage.replace('{bonus}', bonus));
                 } catch (e) {
                     tg.showAlert('বোনাস যোগ করতে সমস্যা হয়েছে।');
                 }
             }
-
-            elements.openTelegramBtn.addEventListener('click', () => tg.openLink(TELEGRAM_CHANNEL_URL));
+            elements.openTelegramBtn.addEventListener('click', () => tg.openLink('https://t.me/Earning_with_Nahid'));
             elements.claimTelegramBtn.addEventListener('click', () => handleTaskClaim('telegram', 'TELEGRAM_JOIN_BONUS', 'চ্যানেলে জয়েন করার জন্য আপনি {bonus} টাকা বোনাস পেয়েছেন!'));
-            
-            elements.openYoutubeBtn.addEventListener('click', () => tg.openLink(YOUTUBE_CHANNEL_URL));
+            elements.openYoutubeBtn.addEventListener('click', () => tg.openLink('https://youtube.com/@ndc-ai?si=OmzMSkOUY1Wbnn3m'));
             elements.claimYoutubeBtn.addEventListener('click', () => handleTaskClaim('youtube', 'YOUTUBE_JOIN_BONUS', 'চ্যানেল সাবস্ক্রাইব করার জন্য আপনি {bonus} টাকা বোনাস পেয়েছেন!'));
 
             elements.requestWithdrawalBtn.addEventListener('click', async () => {
@@ -442,8 +391,6 @@
                     elements.requestWithdrawalBtn.disabled = false;
                 }
             });
-
-            main();
         });
     </script>
 </body>
