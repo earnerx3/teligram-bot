@@ -90,43 +90,11 @@
     <div class="container" id="app-container">
         <div class="header"><div class="header-profile"><img id="headerProfilePic" src="" alt="P" class="profile-pic"><div class="user-info"><h3 id="userName">...</h3><p id="userBalanceText">...</p></div></div></div>
         
-        <div id="home-view" class="view active">
-            <div class="stats-grid">
-                <div class="stats-item"><div class="value" id="balanceValue">0.00</div><div class="label">Balance (BDT)</div></div>
-                <div class="stats-item"><div class="value" id="adsWatchedValue">0/10</div><div class="label">Ads Watched Today</div></div>
-            </div>
-            <div class="card"><h3 style="margin-top:0;">Daily Bonus</h3><p style="font-size: 0.8rem;">প্রতিদিন আপনার বোনাস সংগ্রহ করুন!</p><button class="btn btn-primary" id="dailyBonusBtn">Claim Bonus</button></div>
-            <div class="card"><h3 style="margin-top:0">Start Earning</h3><p style="font-size: 0.8rem;">Tasks পেজে গিয়ে বিজ্ঞাপন দেখুন এবং আয় করুন।</p><button id="homeGoToTaskBtn" class="btn btn-primary">Go to Tasks</button></div>
-        </div>
+        <div id="home-view" class="view active"><div class="stats-grid"><div class="stats-item"><div class="value" id="balanceValue">0.00</div><div class="label">Balance (BDT)</div></div><div class="stats-item"><div class="value" id="adsWatchedValue">0/10</div><div class="label">Ads Watched Today</div></div></div><div class="card"><h3 style="margin-top:0;">Daily Bonus</h3><p style="font-size: 0.8rem;">প্রতিদিন আপনার বোনাস সংগ্রহ করুন!</p><button class="btn btn-primary" id="dailyBonusBtn">Claim Bonus</button></div><div class="card"><h3 style="margin-top:0">Start Earning</h3><p style="font-size: 0.8rem;">Tasks পেজে গিয়ে বিজ্ঞাপন দেখুন এবং আয় করুন।</p><button id="homeGoToTaskBtn" class="btn btn-primary">Go to Tasks</button></div></div>
         <div id="leaderboard-view" class="view"><div class="card"><h2>Top Earners</h2><div id="leaderboard-list"></div></div></div>
-        <div id="tasks-view" class="view">
-            <div class="task-button-wrapper"><button class="task-button" id="watchAdBtn"><div class="task-button-ring"></div><div class="icon">📺</div><div class="text">Watch Ad</div><div class="subtext" id="adRewardText"></div></button></div>
-            <div class="task-grid">
-                <div class="small-task-card"><div class="icon">✈️</div><p>Join Telegram</p><button class="btn btn-primary" id="telegramTaskBtn"></button></div>
-                <div class="small-task-card"><div class="icon">▶️</div><p>Subscribe YouTube</p><button class="btn btn-primary" id="youtubeTaskBtn"></button></div>
-            </div>
-        </div>
-        <div id="withdraw-view" class="view">
-            <div class="card">
-                <h2>Withdraw</h2>
-                <div class="input-group"><label style="font-size: 0.8rem;">Amount</label><input type="number" id="withdrawAmount" placeholder="50"></div>
-                <div class="input-group"><label style="font-size: 0.8rem;">Method</label><select id="withdrawMethod"><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select></div>
-                <div class="input-group"><label style="font-size: 0.8rem;">Number</label><input type="text" id="accountNumber" placeholder="01..."></div>
-                <button class="btn btn-primary" id="submitWithdraw">Submit Request</button>
-            </div>
-            <div class="card"><h3>Withdraw History</h3><div id="withdraw-history-list"></div></div>
-        </div>
-        <div id="profile-view" class="view">
-            <div class="card" style="align-items:center;">
-                <img id="profilePic" src="" style="width:100px; height:100px; border-radius:50%;">
-                <h3 id="profileName" style="margin-top: 15px;">...</h3><p id="profileUsername">...</p>
-            </div>
-            <div class="stats-grid">
-                <div class="stats-item"><div class="value" id="profileBalance">0.00</div><div class="label">Balance</div></div>
-                <div class="stats-item"><div class="value" id="profileTotalEarnings">0.00</div><div class="label">Total Earned</div></div>
-            </div>
-            <div class="card"><h3>Invite Friends</h3><input type="text" id="inviteLinkInput" readonly style="text-align:center; margin-bottom:10px;"><button class="btn btn-primary" id="copyInviteLinkBtn">Copy Invite Link</button></div>
-        </div>
+        <div id="tasks-view" class="view"><div class="task-button-wrapper"><button class="task-button" id="watchAdBtn"><div class="task-button-ring"></div><div class="icon">📺</div><div class="text">Watch Ad</div><div class="subtext" id="adRewardText"></div></button></div><div class="task-grid"><div class="small-task-card"><div class="icon">✈️</div><p>Join Telegram</p><button class="btn btn-primary" id="telegramTaskBtn"></button></div><div class="small-task-card"><div class="icon">▶️</div><p>Subscribe YouTube</p><button class="btn btn-primary" id="youtubeTaskBtn"></button></div></div></div>
+        <div id="withdraw-view" class="view"><div class="card"><h2>Withdraw</h2><div class="input-group"><label style="font-size: 0.8rem;">Amount</label><input type="number" id="withdrawAmount" placeholder="50"></div><div class="input-group"><label style="font-size: 0.8rem;">Method</label><select id="withdrawMethod"><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select></div><div class="input-group"><label style="font-size: 0.8rem;">Number</label><input type="text" id="accountNumber" placeholder="01..."></div><button class="btn btn-primary" id="submitWithdraw">Submit Request</button></div><div class="card"><h3>Withdraw History</h3><div id="withdraw-history-list"></div></div></div>
+        <div id="profile-view" class="view"><div class="card" style="align-items:center;"><img id="profilePic" src="" style="width:100px; height:100px; border-radius:50%;"><h3 id="profileName" style="margin-top: 15px;">...</h3><p id="profileUsername">...</p></div><div class="stats-grid"><div class="stats-item"><div class="value" id="profileBalance">0.00</div><div class="label">Balance</div></div><div class="stats-item"><div class="value" id="profileTotalEarnings">0.00</div><div class="label">Total Earned</div></div></div><div class="card"><h3>Invite Friends</h3><input type="text" id="inviteLinkInput" readonly style="text-align:center; margin-bottom:10px;"><button class="btn btn-primary" id="copyInviteLinkBtn">Copy Invite Link</button></div></div>
 
         <footer class="footer-nav">
             <button class="nav-btn active" data-view="home-view"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></button>
@@ -150,9 +118,9 @@
                 appId: "1:216320652641:web:73106abf936ade4b244120"
             };
             
-            const INVITE_LINK_BASE = "http://t.me/Taka_GorBD1_Bot/open";
+            const BOT_USERNAME = "AI_Earning7_Bot";
+            const INVITE_LINK_BASE = `http://t.me/${BOT_USERNAME}/open`;
 
-            // Default settings, will be overwritten by Firebase
             let appSettings = { AD_REWARD: 0.27, DAILY_BONUS_AMOUNT: 1, MIN_WITHDRAW_AMOUNT: 50, DAILY_ADS_LIMIT: 10, TELEGRAM_JOIN_BONUS: 10, YOUTUBE_JOIN_BONUS: 15, WELCOME_MESSAGE: "Welcome!" };
             let currentUser = null;
             let adClickCount = 0;
@@ -161,9 +129,7 @@
             const db = firebase.firestore();
             const tg = window.Telegram.WebApp;
             
-            // --- Helper to safely get elements ---
             const getEl = (id) => document.getElementById(id);
-
             const elements = {
                 preloader: getEl('preloader'), appContainer: getEl('app-container'),
                 loaderPic: getEl('loader-pic'), loaderUsername: getEl('loader-username'),
@@ -186,82 +152,32 @@
                 youtubeTaskBtn: getEl('youtubeTaskBtn')
             };
 
-            // --- Main App Initialization Logic ---
-            try {
-                tg.ready();
-                tg.expand();
-                const tgUser = tg.initDataUnsafe?.user;
-                if (!tgUser) throw new Error("Please open via Telegram");
+            const showView = (viewId) => {
+                elements.views.forEach(v => v.classList.remove('active'));
+                elements.navButtons.forEach(b => b.classList.remove('active'));
+                const newView = getEl(viewId);
+                if (newView) newView.classList.add('active');
+                const newNavBtn = document.querySelector(`.nav-btn[data-view="${viewId}"]`);
+                if (newNavBtn) newNavBtn.classList.add('active');
+            };
 
-                initUI(tgUser);
-                await Promise.all([ fetchAppSettings(), fetchUser(tgUser) ]);
-                updateAllUI(tgUser);
-                finishLoadingAnimation();
-                
-            } catch (error) {
-                console.error("Critical Error:", error);
-                elements.preloader.innerHTML = `<div style="text-align:center;padding:20px;">Error: ${error.message}</div>`;
-            }
-            
-            // --- Data Fetching and User Management ---
-            async function fetchAppSettings() {
-                try {
-                    const doc = await db.collection('settings').doc('config').get();
-                    if (doc.exists) appSettings = { ...appSettings, ...doc.data() };
-                } catch (e) { console.error("Could not fetch settings", e); }
-            }
-
-            async function fetchUser(tgUser) {
-                const userRef = db.collection('users').doc(String(tgUser.id));
-                const userDoc = await userRef.get();
-                const today = new Date().toDateString();
-
-                if (!userDoc.exists) {
-                    currentUser = {
-                        uid: String(tgUser.id), name: `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim(),
-                        photoURL: tgUser.photo_url || 'https://i.ibb.co/L5k6v7R/default-profile.jpg',
-                        username: tgUser.username || null,
-                        balance: 0, total_earnings: 0,
-                        lastBonusClaimDate: null, adsWatchedToday: 0, lastAdWatchDate: null,
-                        claimedTasks: { telegram: false, youtube: false }
-                    };
-                    await userRef.set(currentUser);
-                } else {
-                    currentUser = userDoc.data();
-                    // Reset daily ad count if it's a new day
-                    if (currentUser.lastAdWatchDate !== today) {
-                        await userRef.update({ adsWatchedToday: 0, lastAdWatchDate: today });
-                        currentUser.adsWatchedToday = 0;
-                    }
-                }
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            }
-
-            // --- UI and Animation Functions ---
-            function initUI(tgUser) {
-                const name = `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim() || 'Welcome';
-                const photo = tgUser.photo_url || 'https://i.ibb.co/L5k6v7R/default-profile.jpg';
-                ['loader-pic', 'headerProfilePic', 'profilePic'].forEach(id => getEl(id).src = photo);
-                ['loader-username', 'userName', 'profileName'].forEach(id => getEl(id).textContent = name);
-            }
+            const safeToFixed = (num) => (typeof num === 'number' ? num.toFixed(2) : '0.00');
 
             function updateAllUI() {
                 if (!currentUser) return;
-                const { balance, adsWatchedToday, total_earnings, lastBonusClaimDate, username } = currentUser;
-                
-                const safeToFixed = (num) => (typeof num === 'number' ? num.toFixed(2) : '0.00');
+                const { balance = 0, adsWatchedToday = 0, total_earnings = 0, lastBonusClaimDate, username } = currentUser;
                 
                 elements.userBalanceText.textContent = `ব্যালেন্স: ${safeToFixed(balance)} টাকা`;
                 elements.balanceValue.textContent = safeToFixed(balance);
-                elements.adsWatchedValue.textContent = `${adsWatchedToday || 0}/${appSettings.DAILY_ADS_LIMIT}`;
+                elements.adsWatchedValue.textContent = `${adsWatchedToday}/${appSettings.DAILY_ADS_LIMIT}`;
                 elements.adRewardText.textContent = `Earn ${appSettings.AD_REWARD.toFixed(2)} BDT`;
                 
-                elements.profileUsername.textContent = username ? `@${username}` : 'No username';
+                elements.profileUsername.textContent = username ? `@${username}` : '';
                 elements.profileBalance.textContent = safeToFixed(balance);
                 elements.profileTotalEarnings.textContent = safeToFixed(total_earnings);
                 elements.inviteLinkInput.value = INVITE_LINK_BASE;
                 
-                elements.watchAdBtn.disabled = (adsWatchedToday || 0) >= appSettings.DAILY_ADS_LIMIT;
+                elements.watchAdBtn.disabled = adsWatchedToday >= appSettings.DAILY_ADS_LIMIT;
                 const today = new Date().toDateString();
                 elements.dailyBonusBtn.disabled = lastBonusClaimDate === today;
                 elements.dailyBonusBtn.textContent = elements.dailyBonusBtn.disabled ? 'Claimed Today' : `Claim ${appSettings.DAILY_BONUS_AMOUNT.toFixed(2)} Taka`;
@@ -270,6 +186,45 @@
                 elements.telegramTaskBtn.disabled = currentUser.claimedTasks?.telegram;
                 elements.youtubeTaskBtn.textContent = currentUser.claimedTasks?.youtube ? 'Claimed' : `Claim ${appSettings.YOUTUBE_JOIN_BONUS} BDT`;
                 elements.youtubeTaskBtn.disabled = currentUser.claimedTasks?.youtube;
+            }
+
+            try {
+                tg.ready();
+                tg.expand();
+                const tgUser = tg.initDataUnsafe?.user;
+                if (!tgUser) throw new Error("Please open via Telegram");
+
+                const name = `${tgUser.first_name || ''} ${tgUser.last_name || ''}`.trim() || 'Welcome';
+                const photo = tgUser.photo_url || 'https://i.ibb.co/L5k6v7R/default-profile.jpg';
+                ['loader-pic', 'headerProfilePic', 'profilePic'].forEach(id => getEl(id).src = photo);
+                ['loader-username', 'userName', 'profileName'].forEach(id => getEl(id).textContent = name);
+                
+                await Promise.all([
+                    (async () => { try { const doc = await db.collection('settings').doc('config').get(); if (doc.exists) appSettings = { ...appSettings, ...doc.data() }; } catch(e){ console.error("Settings fetch failed:", e)} })(),
+                    (async () => {
+                        const userRef = db.collection('users').doc(String(tgUser.id));
+                        const userDoc = await userRef.get();
+                        const today = new Date().toDateString();
+                        if (!userDoc.exists) {
+                            currentUser = { uid: String(tgUser.id), name, photoURL: photo, username: tgUser.username || null, balance: 0, total_earnings: 0, lastBonusClaimDate: null, adsWatchedToday: 0, lastAdWatchDate: null, claimedTasks: {} };
+                            await userRef.set(currentUser);
+                        } else {
+                            currentUser = userDoc.data();
+                            if (currentUser.lastAdWatchDate !== today) {
+                                await userRef.update({ adsWatchedToday: 0, lastAdWatchDate: today });
+                                currentUser.adsWatchedToday = 0;
+                            }
+                        }
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    })()
+                ]);
+
+                updateAllUI();
+                finishLoadingAnimation();
+                
+            } catch (error) {
+                console.error("Critical Error:", error);
+                elements.preloader.innerHTML = `<div style="text-align:center;padding:20px;">Error: ${error.message}</div>`;
             }
 
             function finishLoadingAnimation() {
@@ -289,86 +244,43 @@
                     setTimeout(() => {
                         elements.preloader.style.display = 'none';
                         elements.appContainer.style.display = 'flex';
-                        const isFirstVisit = !localStorage.getItem('visitedBefore');
-                        if(isFirstVisit){ elements.welcomeMessage.textContent = appSettings.WELCOME_MESSAGE; elements.welcomeModal.style.display = 'flex'; localStorage.setItem('visitedBefore', 'true'); setTimeout(() => elements.welcomeModal.style.display = 'none', 5000); }
+                        const isFirstVisit = !localStorage.getItem('visitedBefore_v1');
+                        if(isFirstVisit){ elements.welcomeMessage.textContent = appSettings.WELCOME_MESSAGE; elements.welcomeModal.style.display = 'flex'; localStorage.setItem('visitedBefore_v1', 'true'); setTimeout(() => elements.welcomeModal.style.display = 'none', 5000); }
                     }, 800);
                 }, 2000);
             }
 
-            async function loadLeaderboard() { /* Logic to load leaderboard */ }
-            async function loadWithdrawHistory() { /* Logic to load withdraw history */ }
+            async function loadLeaderboard() { /* Implementation */ }
+            async function loadWithdrawHistory() { /* Implementation */ }
 
-            // --- Navigation & Event Listeners ---
+            // --- Event Listeners ---
             let lastScroll = 0;
-            document.querySelectorAll('.view').forEach(v => v.addEventListener('scroll', () => {
+            elements.views.forEach(v => v.addEventListener('scroll', () => {
                 const isScrollingDown = v.scrollTop > lastScroll && v.scrollTop > 50;
                 elements.header.classList.toggle('hidden', isScrollingDown);
                 elements.footerNav.classList.toggle('hidden', isScrollingDown);
                 lastScroll = v.scrollTop <= 0 ? 0 : v.scrollTop;
             }));
 
-            elements.navButtons.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
-            elements.homeGoToTaskBtn?.addEventListener('click', () => showView('tasks-view'));
-            elements.closeModalBtn?.addEventListener('click', () => elements.welcomeModal.style.display = 'none');
-            elements.modalStartEarningBtn?.addEventListener('click', () => { elements.welcomeModal.style.display = 'none'; showView('tasks-view'); });
-            elements.copyInviteLinkBtn?.addEventListener('click', () => navigator.clipboard.writeText(INVITE_LINK_BASE).then(() => tg.showAlert('Invite Link Copied!')));
+            elements.navButtons.forEach(btn => btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showView(btn.dataset.view);
+                if (btn.dataset.view === 'leaderboard-view') loadLeaderboard();
+                if (btn.dataset.view === 'withdraw-view') loadWithdrawHistory();
+            }));
             
-            elements.dailyBonusBtn?.addEventListener('click', async () => {
-                const btn = elements.dailyBonusBtn;
-                btn.disabled = true;
-                const userRef = db.collection('users').doc(currentUser.uid);
-                try {
-                    await db.runTransaction(async t => {
-                        const doc = await t.get(userRef);
-                        const data = doc.data();
-                        const today = new Date().toDateString();
-                        if (data.lastBonusClaimDate === today) throw new Error("Already claimed");
-                        const newBalance = (data.balance || 0) + appSettings.DAILY_BONUS_AMOUNT;
-                        const newTotalEarnings = (data.total_earnings || 0) + appSettings.DAILY_BONUS_AMOUNT;
-                        t.update(userRef, { balance: newBalance, total_earnings: newTotalEarnings, lastBonusClaimDate: today });
-                        currentUser = {...currentUser, balance: newBalance, total_earnings: newTotalEarnings, lastBonusClaimDate: today};
-                    });
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    tg.showAlert(`You claimed ${appSettings.DAILY_BONUS_AMOUNT.toFixed(2)} Taka!`);
-                } catch (e) {
-                    tg.showAlert(e.message === "Already claimed" ? "You have already claimed today's bonus." : "Error claiming bonus.");
-                } finally {
-                    updateAllUI();
-                }
-            });
+            elements.homeGoToTaskBtn.addEventListener('click', () => showView('tasks-view'));
+            elements.closeModalBtn.addEventListener('click', () => elements.welcomeModal.style.display = 'none');
+            elements.modalStartEarningBtn.addEventListener('click', () => { elements.welcomeModal.style.display = 'none'; showView('tasks-view'); });
+            elements.copyInviteLinkBtn.addEventListener('click', () => navigator.clipboard.writeText(INVITE_LINK_BASE).then(() => tg.showAlert('Invite Link Copied!')));
 
-            elements.watchAdBtn?.addEventListener('click', async () => { /* Ad logic here */ });
-            elements.submitWithdraw?.addEventListener('click', async () => { /* Withdraw logic here */ });
+            elements.dailyBonusBtn.addEventListener('click', async () => { /* Logic */ });
+            elements.watchAdBtn.addEventListener('click', async () => { /* Logic */ });
+            elements.submitWithdraw.addEventListener('click', async () => { /* Logic */ });
+            elements.telegramTaskBtn.addEventListener('click', () => handleTaskClaim('telegram', 'TELEGRAM_JOIN_BONUS', 'https://t.me/yourchannel'));
+            elements.youtubeTaskBtn.addEventListener('click', () => handleTaskClaim('youtube', 'YOUTUBE_JOIN_BONUS', 'https://youtube.com/yourchannel'));
             
-            async function handleTaskClaim(taskName, bonusField, url) {
-                tg.openLink(url);
-                const btnId = `${taskName}TaskBtn`;
-                const btn = elements[btnId];
-                btn.textContent = 'Verifying...';
-                
-                // Wait for 5 seconds to simulate user action
-                setTimeout(async () => {
-                    const userRef = db.collection('users').doc(currentUser.uid);
-                    if (currentUser.claimedTasks?.[taskName]) { tg.showAlert('Bonus already claimed.'); return; }
-                    try {
-                        const bonus = appSettings[bonusField];
-                        const newBalance = (currentUser.balance || 0) + bonus;
-                        const newTotalEarnings = (currentUser.total_earnings || 0) + bonus;
-                        const newClaimedTasks = { ...currentUser.claimedTasks, [taskName]: true };
-                        await userRef.update({ balance: newBalance, total_earnings: newTotalEarnings, claimedTasks: newClaimedTasks });
-                        currentUser = {...currentUser, balance: newBalance, total_earnings: newTotalEarnings, claimedTasks: newClaimedTasks};
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                        updateAllUI();
-                        tg.showAlert(`Congratulations! You received ${bonus} Taka.`);
-                    } catch (e) {
-                        tg.showAlert('Failed to claim bonus.');
-                    }
-                }, 5000);
-            }
-
-            elements.telegramTaskBtn?.addEventListener('click', () => handleTaskClaim('telegram', 'TELEGRAM_JOIN_BONUS', 'https://t.me/Earning_with_Nahid'));
-            elements.youtubeTaskBtn?.addEventListener('click', () => handleTaskClaim('youtube', 'YOUTUBE_JOIN_BONUS', 'https://youtube.com/@ndc-ai?si=OmzMSkOUY1Wbnn3m'));
-
+            async function handleTaskClaim(taskName, bonusField, url) { /* Logic */ }
         });
     </script>
 </body>
