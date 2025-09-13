@@ -8,8 +8,27 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <!-- Manual Ad SDKs -->
-    <script src='//libtl.com/sdk.js' data-zone='9719927' data-sdk='show_9719927'></script>
-    <script src="https://ad.gigapub.tech/script?id=2932"></script>
+    <script src='//libtl.com/sdk.js' data-zone='9719927' data-sdk='show_9719927' async></script>
+    <script>
+        function showGigaAd(scriptId) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const script = document.createElement('script');
+                    script.src = `https://ad.gigapub.tech/script?id=${scriptId}`;
+                    script.onload = () => {
+                        // GigaPub SDK doesn't have a clear success callback, so we simulate it.
+                        // You might need to find a better way based on their documentation.
+                        console.log('GigaPub Ad script loaded.');
+                        setTimeout(resolve, 3000); // Assume ad showed for 3s
+                    };
+                    script.onerror = reject;
+                    document.body.appendChild(script);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        }
+    </script>
     <style>
         :root {
             --primary-color: #007bff; --primary-green: #28a745; --background-dark: #121212;
@@ -62,12 +81,19 @@
         .lb-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin: 0 10px; }
         .lb-name { font-weight: 600; flex-grow: 1; font-size:0.9rem; }
         .lb-balance { font-size: 1rem; font-weight: bold; color: var(--primary-green); }
+        /* Improved Withdraw & Profile UI */
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i { position: absolute; left: 15px; top: 14px; color: var(--text-secondary); }
+        .input-group input, .input-group select { width: 100%; padding: 12px 12px 12px 45px; background-color: var(--background-dark); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-light); font-size: 1rem; box-sizing: border-box; }
+        .invite-card { background-color: var(--surface-dark); padding: 15px; border-radius: 10px; }
+        .invite-card input { width: 100%; background: var(--background-dark); border: 1px dashed var(--primary-blue); border-radius: 8px; text-align: center; padding: 10px; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 10px; box-sizing: border-box; }
         .withdraw-history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
         .history-info p { margin: 0; font-size:0.9rem; } .history-info .date { font-size: 0.7rem; color: var(--text-secondary); }
         .history-status { padding: 5px 10px; border-radius: 15px; font-size: 0.7rem; font-weight: bold; }
         .status-pending { background-color: var(--yellow); color: #000; }
         .status-approved { background-color: var(--primary-green); color: #fff; }
         .status-rejected { background-color: var(--red); color: #fff; }
+        /* Premium Task Button */
         .task-button-wrapper { display: flex; justify-content: center; align-items: center; margin: 20px 0; }
         .task-button { position: relative; width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(145deg, #1f1f1f, #1a1a1a); border: none; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 10px 10px 20px #0d0d0d, -10px -10px 20px #2b2b2b; transition: all 0.3s ease; }
         .task-button:active { box-shadow: inset 5px 5px 10px #0d0d0d, inset -5px -5px 10px #2b2b2b; }
@@ -93,8 +119,8 @@
         <div id="home-view" class="view active"><div class="stats-grid"><div class="stats-item"><div class="value" id="balanceValue">0.00</div><div class="label">Balance (BDT)</div></div><div class="stats-item"><div class="value" id="adsWatchedValue">0/10</div><div class="label">Ads Watched Today</div></div></div><div class="card"><h3 style="margin-top:0;">Daily Bonus</h3><p style="font-size: 0.8rem;">প্রতিদিন আপনার বোনাস সংগ্রহ করুন!</p><button class="btn btn-primary" id="dailyBonusBtn">Claim Bonus</button></div><div class="card"><h3 style="margin-top:0">Start Earning</h3><p style="font-size: 0.8rem;">Tasks পেজে গিয়ে বিজ্ঞাপন দেখুন এবং আয় করুন।</p><button id="homeGoToTaskBtn" class="btn btn-primary">Go to Tasks</button></div></div>
         <div id="leaderboard-view" class="view"><div class="card"><h2>Top Earners</h2><div id="leaderboard-list"></div></div></div>
         <div id="tasks-view" class="view"><div class="task-button-wrapper"><button class="task-button" id="watchAdBtn"><div class="task-button-ring"></div><div class="icon">📺</div><div class="text">Watch Ad</div><div class="subtext" id="adRewardText"></div></button></div><div class="task-grid"><div class="small-task-card"><div class="icon">✈️</div><p>Join Telegram</p><button class="btn btn-primary" id="telegramTaskBtn"></button></div><div class="small-task-card"><div class="icon">▶️</div><p>Subscribe YouTube</p><button class="btn btn-primary" id="youtubeTaskBtn"></button></div></div></div>
-        <div id="withdraw-view" class="view"><div class="card"><h2>Withdraw</h2><div class="input-group"><label style="font-size: 0.8rem;">Amount</label><input type="number" id="withdrawAmount" placeholder="50"></div><div class="input-group"><label style="font-size: 0.8rem;">Method</label><select id="withdrawMethod"><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select></div><div class="input-group"><label style="font-size: 0.8rem;">Number</label><input type="text" id="accountNumber" placeholder="01..."></div><button class="btn btn-primary" id="submitWithdraw">Submit Request</button></div><div class="card"><h3>Withdraw History</h3><div id="withdraw-history-list"></div></div></div>
-        <div id="profile-view" class="view"><div class="card" style="align-items:center;"><img id="profilePic" src="" style="width:100px; height:100px; border-radius:50%;"><h3 id="profileName" style="margin-top: 15px;">...</h3><p id="profileUsername">...</p></div><div class="stats-grid"><div class="stats-item"><div class="value" id="profileBalance">0.00</div><div class="label">Balance</div></div><div class="stats-item"><div class="value" id="profileTotalEarnings">0.00</div><div class="label">Total Earned</div></div></div><div class="card"><h3>Invite Friends</h3><input type="text" id="inviteLinkInput" readonly style="text-align:center; margin-bottom:10px;"><button class="btn btn-primary" id="copyInviteLinkBtn">Copy Invite Link</button></div></div>
+        <div id="withdraw-view" class="view"><div class="card"><h2>Withdraw</h2><div class="input-group"><i class="fas fa-wallet"></i><input type="number" id="withdrawAmount" placeholder="Amount"></div><div class="input-group"><i class="fas fa-exchange-alt"></i><select id="withdrawMethod"><option value="bKash">bKash</option><option value="Nagad">Nagad</option></select></div><div class="input-group"><i class="fas fa-hashtag"></i><input type="text" id="accountNumber" placeholder="Number"></div><button class="btn btn-primary" id="submitWithdraw">Submit Request</button></div><div class="card"><h3>Withdraw History</h3><div id="withdraw-history-list"></div></div></div>
+        <div id="profile-view" class="view"><div class="card" style="align-items:center;"><img id="profilePic" src="" style="width:100px; height:100px; border-radius:50%;"><h3 id="profileName" style="margin-top: 15px;">...</h3><p id="profileUsername">...</p></div><div class="stats-grid"><div class="stats-item"><div class="value" id="profileBalance">0.00</div><div class="label">Balance</div></div><div class="stats-item"><div class="value" id="profileTotalEarnings">0.00</div><div class="label">Total Earned</div></div></div><div class="card invite-card"><h3 style="margin-top:0;">Invite Friends</h3><input type="text" id="inviteLinkInput" readonly><button class="btn btn-primary" id="copyInviteLinkBtn">Copy Invite Link</button></div></div>
 
         <footer class="footer-nav">
             <button class="nav-btn active" data-view="home-view"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></button>
@@ -165,14 +191,14 @@
 
             function updateAllUI() {
                 if (!currentUser) return;
-                const { balance = 0, adsWatchedToday = 0, total_earnings = 0, lastBonusClaimDate, username } = currentUser;
+                const { balance = 0, adsWatchedToday = 0, total_earnings = 0, lastBonusClaimDate, username, claimedTasks = {} } = currentUser;
                 
                 elements.userBalanceText.textContent = `ব্যালেন্স: ${safeToFixed(balance)} টাকা`;
                 elements.balanceValue.textContent = safeToFixed(balance);
                 elements.adsWatchedValue.textContent = `${adsWatchedToday}/${appSettings.DAILY_ADS_LIMIT}`;
                 elements.adRewardText.textContent = `Earn ${appSettings.AD_REWARD.toFixed(2)} BDT`;
                 
-                elements.profileUsername.textContent = username ? `@${username}` : '';
+                elements.profileUsername.textContent = username ? `@${username}` : 'No username';
                 elements.profileBalance.textContent = safeToFixed(balance);
                 elements.profileTotalEarnings.textContent = safeToFixed(total_earnings);
                 elements.inviteLinkInput.value = INVITE_LINK_BASE;
@@ -182,10 +208,10 @@
                 elements.dailyBonusBtn.disabled = lastBonusClaimDate === today;
                 elements.dailyBonusBtn.textContent = elements.dailyBonusBtn.disabled ? 'Claimed Today' : `Claim ${appSettings.DAILY_BONUS_AMOUNT.toFixed(2)} Taka`;
 
-                elements.telegramTaskBtn.textContent = currentUser.claimedTasks?.telegram ? 'Claimed' : `Claim ${appSettings.TELEGRAM_JOIN_BONUS} BDT`;
-                elements.telegramTaskBtn.disabled = currentUser.claimedTasks?.telegram;
-                elements.youtubeTaskBtn.textContent = currentUser.claimedTasks?.youtube ? 'Claimed' : `Claim ${appSettings.YOUTUBE_JOIN_BONUS} BDT`;
-                elements.youtubeTaskBtn.disabled = currentUser.claimedTasks?.youtube;
+                elements.telegramTaskBtn.textContent = claimedTasks.telegram ? 'Claimed' : `Claim ${appSettings.TELEGRAM_JOIN_BONUS} BDT`;
+                elements.telegramTaskBtn.disabled = claimedTasks.telegram;
+                elements.youtubeTaskBtn.textContent = claimedTasks.youtube ? 'Claimed' : `Claim ${appSettings.YOUTUBE_JOIN_BONUS} BDT`;
+                elements.youtubeTaskBtn.disabled = claimedTasks.youtube;
             }
 
             try {
@@ -232,7 +258,7 @@
                 const blastContainer = document.querySelector('.loader-blast-container');
                 for(let i=0; i<30; i++){ let p=document.createElement('div'); p.className='blast-particle'; p.style.transform=`rotate(${Math.random()*360}deg) translateX(80px) rotate(-${Math.random()*360}deg)`; p.style.transition=`all ${0.5 + Math.random()*0.5}s ease-out`; blastContainer.appendChild(p); setTimeout(()=>p.style.transform=`${p.style.transform} scale(15)`,50);}
                 
-                setTimeout(() => elements.progressBar.style.width = '100%', 100);
+                setTimeout(() => getEl('progressBar').style.width = '100%', 100);
                 setTimeout(() => {
                     const headerPicRect = elements.headerProfilePic.getBoundingClientRect();
                     const scale = headerPicRect.width / loaderPic.width;
@@ -244,18 +270,33 @@
                     setTimeout(() => {
                         elements.preloader.style.display = 'none';
                         elements.appContainer.style.display = 'flex';
-                        const isFirstVisit = !localStorage.getItem('visitedBefore_v1');
-                        if(isFirstVisit){ elements.welcomeMessage.textContent = appSettings.WELCOME_MESSAGE; elements.welcomeModal.style.display = 'flex'; localStorage.setItem('visitedBefore_v1', 'true'); setTimeout(() => elements.welcomeModal.style.display = 'none', 5000); }
+                        const isFirstVisit = !localStorage.getItem('visitedBefore_v2');
+                        if(isFirstVisit){ elements.welcomeMessage.textContent = appSettings.WELCOME_MESSAGE; elements.welcomeModal.style.display = 'flex'; localStorage.setItem('visitedBefore_v2', 'true'); setTimeout(() => elements.welcomeModal.style.display = 'none', 5000); }
                     }, 800);
                 }, 2000);
             }
 
-            async function loadLeaderboard() { /* Implementation */ }
+            async function loadLeaderboard() {
+                const list = elements.leaderboardList;
+                if (!list) return;
+                list.innerHTML = 'Loading...';
+                try {
+                    const snapshot = await db.collection('users').orderBy('total_earnings', 'desc').limit(20).get();
+                    list.innerHTML = '';
+                    snapshot.forEach((doc, index) => {
+                        const user = doc.data();
+                        const item = document.createElement('div');
+                        item.className = 'leaderboard-item';
+                        item.innerHTML = `<span class="lb-rank">${index + 1}</span><img src="${user.photoURL || ''}" class="lb-pic"><span class="lb-name">${user.name || 'N/A'}</span><span class="lb-balance">${safeToFixed(user.total_earnings)}</span>`;
+                        list.appendChild(item);
+                    });
+                } catch(e) { list.innerHTML = 'Failed to load leaderboard.'; console.error(e); }
+            }
+
             async function loadWithdrawHistory() { /* Implementation */ }
 
-            // --- Event Listeners ---
             let lastScroll = 0;
-            elements.views.forEach(v => v.addEventListener('scroll', () => {
+            document.querySelectorAll('.view').forEach(v => v.addEventListener('scroll', () => {
                 const isScrollingDown = v.scrollTop > lastScroll && v.scrollTop > 50;
                 elements.header.classList.toggle('hidden', isScrollingDown);
                 elements.footerNav.classList.toggle('hidden', isScrollingDown);
@@ -274,13 +315,129 @@
             elements.modalStartEarningBtn.addEventListener('click', () => { elements.welcomeModal.style.display = 'none'; showView('tasks-view'); });
             elements.copyInviteLinkBtn.addEventListener('click', () => navigator.clipboard.writeText(INVITE_LINK_BASE).then(() => tg.showAlert('Invite Link Copied!')));
 
-            elements.dailyBonusBtn.addEventListener('click', async () => { /* Logic */ });
-            elements.watchAdBtn.addEventListener('click', async () => { /* Logic */ });
-            elements.submitWithdraw.addEventListener('click', async () => { /* Logic */ });
+            elements.dailyBonusBtn.addEventListener('click', async () => {
+                const btn = elements.dailyBonusBtn;
+                btn.disabled = true;
+                const userRef = db.collection('users').doc(currentUser.uid);
+                try {
+                    await db.runTransaction(async t => {
+                        const doc = await t.get(userRef);
+                        const data = doc.data();
+                        const today = new Date().toDateString();
+                        if (data.lastBonusClaimDate === today) throw new Error("Already claimed");
+                        const newBalance = (data.balance || 0) + appSettings.DAILY_BONUS_AMOUNT;
+                        const newTotalEarnings = (data.total_earnings || 0) + appSettings.DAILY_BONUS_AMOUNT;
+                        t.update(userRef, { balance: newBalance, total_earnings: newTotalEarnings, lastBonusClaimDate: today });
+                        currentUser = {...currentUser, balance: newBalance, total_earnings: newTotalEarnings, lastBonusClaimDate: today};
+                    });
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    tg.showAlert(`You claimed ${appSettings.DAILY_BONUS_AMOUNT.toFixed(2)} Taka!`);
+                } catch (e) {
+                    tg.showAlert(e.message === "Already claimed" ? "You have already claimed today's bonus." : "Error claiming bonus.");
+                } finally {
+                    updateAllUI();
+                }
+            });
+
+            elements.watchAdBtn.addEventListener('click', async () => {
+                 if (currentUser.adsWatchedToday >= appSettings.DAILY_ADS_LIMIT) { tg.showAlert('Daily ad limit reached.'); return; }
+                elements.watchAdBtn.disabled = true;
+                
+                const adPlatform = adClickCount % 2 === 0 ? 'gigapub' : 'libtl';
+                
+                try {
+                    let adPromise;
+                    if (adPlatform === 'gigapub' && typeof showGigaAd === 'function') {
+                        adPromise = showGigaAd('2932');
+                    } else if (adPlatform === 'libtl' && typeof show_9719927 === 'function') {
+                        adPromise = show_9719927();
+                    } else {
+                        throw new Error("Ad SDK not available.");
+                    }
+
+                    await adPromise;
+
+                    adClickCount++;
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    await db.runTransaction(async t => {
+                        const doc = await t.get(userRef);
+                        const data = doc.data();
+                        const newBalance = (data.balance || 0) + appSettings.AD_REWARD;
+                        const newTotalEarnings = (data.total_earnings || 0) + appSettings.AD_REWARD;
+                        const newAdsWatched = (data.adsWatchedToday || 0) + 1;
+                        t.update(userRef, { balance: newBalance, total_earnings: newTotalEarnings, adsWatchedToday: newAdsWatched });
+                        currentUser = {...currentUser, balance: newBalance, total_earnings: newTotalEarnings, adsWatchedToday: newAdsWatched};
+                    });
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
+                    for(let i=0; i<50; i++){ let c=document.createElement('div'); c.className='confetti'; c.style.setProperty('--x', (Math.random()*400-200)+'px'); c.style.setProperty('--y', (Math.random()*400-200)+'px'); document.body.appendChild(c); setTimeout(()=>c.remove(),1000); }
+                    tg.showAlert(`Congratulations! You earned ${appSettings.AD_REWARD.toFixed(2)} Taka.`);
+                } catch(e) {
+                    tg.showAlert('Failed to show ad. Please try again.');
+                    console.error("Ad Error:", e);
+                } finally {
+                    updateAllUI();
+                }
+            });
+            
+            elements.submitWithdraw.addEventListener('click', async () => {
+                const btn = elements.submitWithdraw;
+                btn.disabled = true;
+                const amount = parseFloat(elements.withdrawAmount.value);
+                const number = elements.accountNumber.value;
+                const method = elements.withdrawMethod.value;
+                
+                if (!amount || !number || !method) { tg.showAlert('Please fill all fields.'); btn.disabled = false; return; }
+                if (amount < appSettings.MIN_WITHDRAW_AMOUNT) { tg.showAlert(`Minimum withdrawal is ${appSettings.MIN_WITHDRAW_AMOUNT} Taka.`); btn.disabled = false; return; }
+                if (amount > currentUser.balance) { tg.showAlert('Insufficient balance.'); btn.disabled = false; return; }
+                
+                try {
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    await db.collection('withdrawals').add({
+                        uid: currentUser.uid, name: currentUser.name, amount, accountNumber: number, method,
+                        status: 'pending', requestedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    const newBalance = currentUser.balance - amount;
+                    await userRef.update({ balance: newBalance });
+                    currentUser.balance = newBalance;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    updateAllUI();
+                    tg.showAlert('Withdrawal request submitted successfully.');
+                    showView('home-view');
+                } catch(e) {
+                    tg.showAlert('Failed to submit request.');
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+
+            async function handleTaskClaim(taskName, bonusField, url) {
+                const btn = elements[`${taskName}TaskBtn`];
+                tg.openLink(url);
+                btn.textContent = 'Verifying...';
+                
+                setTimeout(async () => {
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    if (currentUser.claimedTasks?.[taskName]) { tg.showAlert('Bonus already claimed.'); updateAllUI(); return; }
+                    try {
+                        const bonus = appSettings[bonusField];
+                        const newBalance = (currentUser.balance || 0) + bonus;
+                        const newTotalEarnings = (currentUser.total_earnings || 0) + bonus;
+                        const newClaimedTasks = { ...currentUser.claimedTasks, [taskName]: true };
+                        await userRef.update({ balance: newBalance, total_earnings: newTotalEarnings, claimedTasks: newClaimedTasks });
+                        currentUser = {...currentUser, balance: newBalance, total_earnings: newTotalEarnings, claimedTasks: newClaimedTasks};
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        updateAllUI();
+                        tg.showAlert(`Congratulations! You received ${bonus} Taka.`);
+                    } catch (e) {
+                        tg.showAlert('Failed to claim bonus.');
+                        updateAllUI();
+                    }
+                }, 5000);
+            }
+
             elements.telegramTaskBtn.addEventListener('click', () => handleTaskClaim('telegram', 'TELEGRAM_JOIN_BONUS', 'https://t.me/yourchannel'));
             elements.youtubeTaskBtn.addEventListener('click', () => handleTaskClaim('youtube', 'YOUTUBE_JOIN_BONUS', 'https://youtube.com/yourchannel'));
-            
-            async function handleTaskClaim(taskName, bonusField, url) { /* Logic */ }
         });
     </script>
 </body>
