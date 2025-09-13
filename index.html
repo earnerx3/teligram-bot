@@ -9,7 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     
     <script>
-        // Ad SDKs will be loaded dynamically to avoid initial load blocking
         function loadAdScript(src) {
             return new Promise((resolve, reject) => {
                 const existingScript = document.querySelector(`script[src="${src}"]`);
@@ -63,14 +62,12 @@
         .nav-btn { background: none; border: none; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; cursor: pointer; transition: color 0.2s; flex: 1; padding: 5px 0; }
         .nav-btn.active { color: var(--primary-color); }
         .nav-btn svg { width: 24px; height: 24px; margin-bottom: 4px; }
-        /* Ad task button styles */
         .ad-tasks-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
         .ad-task-button { height: 130px; background: linear-gradient(145deg, #1f1f1f, #1a1a1a); border: 1px solid var(--border-color); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 5px 5px 10px #0d0d0d, -5px -5px 10px #2b2b2b; transition: all 0.3s ease; border-radius: 15px; }
         .ad-task-button:disabled { background: #2a2a2a; box-shadow: inset 2px 2px 5px #0d0d0d; color: #777; }
         .ad-task-button .icon { font-size: 2rem; margin-bottom: 8px; }
         .ad-task-button .text { font-size: 0.9rem; font-weight: 600; }
         .ad-task-button .subtext { font-size: 0.7rem; color: var(--text-secondary); }
-        .ad-task-button .timer { font-size: 1rem; font-weight: bold; color: var(--yellow); }
     </style>
 </head>
 <body>
@@ -162,6 +159,7 @@
 
             const safeToFixed = (num) => (typeof num === 'number' ? num.toFixed(2) : '0.00');
 
+            // ✅ এই ফাংশনটি ঠিক করা হয়েছে
             function updateAllUI() {
                 if (!currentUser) return;
                 const { balance = 0, adsWatchedToday = 0, lastBonusClaimDate, claimedTasks = {} } = currentUser;
@@ -175,8 +173,14 @@
                 elements.adRewardText2.textContent = `Earn ${appSettings.AD_REWARD.toFixed(2)} BDT`;
 
                 const isAdLimitReached = adsWatchedToday >= appSettings.DAILY_ADS_LIMIT;
-                if (!elements.watchAdBtn1.disabled.includes('timer')) elements.watchAdBtn1.disabled = isAdLimitReached;
-                if (!elements.watchAdBtn2.disabled.includes('timer')) elements.watchAdBtn2.disabled = isAdLimitReached;
+                
+                // ঠিক করা কোড: এখন data-attribute চেক করবে
+                if (elements.watchAdBtn1.dataset.timerActive !== 'true') {
+                    elements.watchAdBtn1.disabled = isAdLimitReached;
+                }
+                if (elements.watchAdBtn2.dataset.timerActive !== 'true') {
+                    elements.watchAdBtn2.disabled = isAdLimitReached;
+                }
                 
                 const today = new Date().toDateString();
                 elements.dailyBonusBtn.disabled = lastBonusClaimDate === today;
@@ -188,7 +192,6 @@
                 elements.youtubeTaskBtn.disabled = claimedTasks.youtube;
             }
 
-            // --- Initialization ---
             try {
                 tg.ready();
                 tg.expand();
@@ -226,11 +229,9 @@
                 document.body.innerHTML = `<div style="text-align:center;padding:20px;">Error: ${error.message}</div>`;
             }
 
-            // --- Event Listeners ---
             elements.navButtons.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
             elements.homeGoToTaskBtn.addEventListener('click', () => showView('tasks-view'));
 
-            // JS ঠিক করা হয়েছে: ডেইলি বোনাস ক্লেইম
             elements.dailyBonusBtn.addEventListener('click', async () => {
                 const btn = elements.dailyBonusBtn;
                 const today = new Date().toDateString();
@@ -265,7 +266,6 @@
                 }
             });
 
-            // JS পরিবর্তন: নতুন বিজ্ঞাপন দেখার ফাংশন
             async function handleWatchAd(buttonElement, adProvider) {
                 if (currentUser.adsWatchedToday >= appSettings.DAILY_ADS_LIMIT) {
                     tg.showAlert('Daily ad limit reached.');
@@ -283,8 +283,7 @@
                         await loadAdScript('https://ad.gigapub.tech/script?id=2932');
                     }
                     
-                    // Assume ad is watched after a delay. A real SDK would have a callback.
-                    await new Promise(resolve => setTimeout(resolve, 8000)); // 8 second wait
+                    await new Promise(resolve => setTimeout(resolve, 8000));
 
                     const userRef = db.collection('users').doc(currentUser.uid);
                     const newBalance = (currentUser.balance || 0) + appSettings.AD_REWARD;
@@ -313,7 +312,7 @@
 
             function startCooldown(buttonElement) {
                 let seconds = 15;
-                buttonElement.disabled = true; // Keep it disabled
+                buttonElement.disabled = true;
                 buttonElement.dataset.timerActive = 'true';
                 
                 const originalText = buttonElement.querySelector('.text').textContent;
@@ -325,18 +324,15 @@
                     if (seconds < 0) {
                         clearInterval(interval);
                         timerElement.textContent = originalText;
-                        buttonElement.disabled = false;
                         buttonElement.dataset.timerActive = 'false';
-                        updateAllUI(); // re-check daily limit
+                        updateAllUI();
                     }
                 }, 1000);
             }
             
-            // JS পরিবর্তন: দুটি বাটনের জন্য আলাদা ইভেন্ট লিসেনার
             elements.watchAdBtn1.addEventListener('click', () => handleWatchAd(elements.watchAdBtn1, 'libtl'));
             elements.watchAdBtn2.addEventListener('click', () => handleWatchAd(elements.watchAdBtn2, 'gigapub'));
 
-            // JS ঠিক করা হয়েছে: অন্যান্য টাস্ক ক্লেইম
             async function handleTaskClaim(taskName, bonusField, url) {
                 if (currentUser.claimedTasks?.[taskName]) {
                     tg.showAlert('Bonus already claimed for this task.');
@@ -366,9 +362,9 @@
                         tg.showAlert(`Congratulations! You received ${bonus} Taka.`);
                     } catch (e) {
                         tg.showAlert('Failed to claim bonus. Please try again.');
-                        updateAllUI(); // Re-enable button on failure by updating UI
+                        updateAllUI();
                     }
-                }, 8000); // 8 seconds verification time
+                }, 8000);
             }
             
             elements.telegramTaskBtn.addEventListener('click', () => handleTaskClaim('telegram', 'TELEGRAM_JOIN_BONUS', 'https://t.me/yourchannel'));
